@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
-export const signup = async (req, res) => {
+import { errorHandler } from "../utils/error.js";
+export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
 
   if (
@@ -11,11 +12,11 @@ export const signup = async (req, res) => {
     email === "" ||
     password === ""
   ) {
-    return res.status(400).json({ message: "All fields are required" });
+    next(errorHandler(400, "All fields required"));
   }
 
   const hashedPassword = bcryptjs.hashSync(password, 10);
-console.log("hashed password ::", hashedPassword)
+  console.log("hashed password ::", hashedPassword);
   const newUser = new User({
     username,
     email,
@@ -26,6 +27,6 @@ console.log("hashed password ::", hashedPassword)
     await newUser.save();
     res.status(201).json({ message: "user added to the database!" });
   } catch (error) {
-    res.status(500).json({ message: "Duplicate key error for username" });
+    next(error);
   }
 };
